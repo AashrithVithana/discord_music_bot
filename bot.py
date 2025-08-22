@@ -74,7 +74,7 @@ async def on_ready():
 async def on_message(message):
         if message.author == bot.user:
             return 
-        if message.content.startswith('&hello'):
+        if message.content.startswith('$hello'):
             await message.channel.send('Heyyy!')
         if message.content.startswith('%meme'):
             await message.channel.send(get_meme())
