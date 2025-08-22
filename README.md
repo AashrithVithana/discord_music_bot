@@ -2,7 +2,6 @@
 ### Description
 The primary purpose of this bot is to join voice channel and play requested songs. This discord bot uses `YouTube v3 API` to search and play songs. It also responds to text messages.
 
-
 ### Installation
 1. Clone this repository.
 2. Run `pip install -r requirements.txt`.
