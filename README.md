@@ -20,4 +20,4 @@ The bot responds to - `$`
 - `$memes` - Generate random funny memes.
 
 ### Note
-When using the command `$play` the discord bot searches the song and first downloads the `.mp3` audio file of the song locally and then plays the audio in the voice channel.
+Make sure `ffmpeg` is installed through [brew](https://brew.sh/) and added to your system PATH, otherwise the audio won't play.
