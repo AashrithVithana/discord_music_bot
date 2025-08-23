@@ -16,6 +16,8 @@ The bot responds to - `$`
 - `$join` - Joins voice channel.
 - `$leave` - Leaves voice channel.
 - `$play <song>` - Plays song in the voice channel.
+- `$add <song>` - Add song in queue.
+- `$skip` - Skip the current song.
 - `$memes` - Generate random funny memes.
 
 ### Note
