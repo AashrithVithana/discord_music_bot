@@ -13,9 +13,9 @@ api_key = os.getenv("API_KEY1")
 youtube = build("youtube", "v3", developerKey=api_key)
 
 
+songs_list = []
 
-
-load_dotenv()
+# load_dotenv()
 api_key = os.getenv("API_KEY")
 
 intents = discord.Intents.default()
@@ -36,7 +36,7 @@ def get_video(query: str):
         part="snippet",
         q=query,
         type="video",
-        maxResults=5
+        maxResults=2
     )
     response = request.execute()
     for item in response["items"]:
@@ -49,7 +49,17 @@ def get_audio_url(youtube_url: str):
         info = ydl.extract_info(youtube_url, download=False)
         return info['url']
 
-
+async def play_next(ctx):
+    print(songs_list)
+    if songs_list:  # if queue not empty
+        next_song = songs_list.pop(0)
+        FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+        print(songs_list)
+        vc = ctx.guild.voice_client
+        vc.play(discord.FFmpegPCMAudio(next_song,**FFMPEG_OPTIONS), after=lambda e: bot.loop.create_task(play_next(ctx)))
+    else:
+        ctx.send("no songs in queue")
+        
 
 @bot.event
 async def on_ready():
@@ -75,7 +85,10 @@ async def on_message(message):
                 await message.channel.send("Joined Voice Channel!")
         if message.content.startswith('bye') or message.content.startswith('Bye') :
             await message.channel.send(f"Bye {message.author}!")
-
+        if message.content.startswith('moan') or message.content.startswith('Bye') :
+            await message.channel.send(f"po ra pumka moan")
+        if message.content.startswith('ash') or message.content.startswith('aashrith') :
+            await message.channel.send(f"goat 🙇")
         if message.content.startswith('$leave'):
             voice_client = message.guild.voice_client
             if voice_client:
@@ -88,20 +101,48 @@ async def on_message(message):
 @bot.command()
 async def play(ctx, *arr):
     result = " ".join(arr)
+
     if not ctx.author.voice:
         await ctx.send("You are not in the VC.")
         return
+    
     channel = ctx.author.voice.channel
     vc = ctx.guild.voice_client
+
     FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+    
     if not vc:
         vc = await channel.connect()
+
     url = get_video(result)
     audio_url = get_audio_url(url)
+    # songs_list.append(audio_url)
+    
+    if not vc.is_playing():
+        vc.play(discord.FFmpegPCMAudio(audio_url, **FFMPEG_OPTIONS),after=lambda e: bot.loop.create_task(play_next(ctx)))
+        await ctx.send(f"Now playing {result}")
+        # vc.stop()
+    else:
+        songs_list.append(audio_url)
+        await ctx.send(f"{result} added to queue.")
+    
+
+@bot.command()
+async def add(ctx, *arr):
+    result = " ".join(arr)
+    url = get_video(result)
+    audio_url = get_audio_url(url)
+    songs_list.append(audio_url)
+    await ctx.send(f"{result} added to queue :)")
+
+@bot.command()
+async def skip(ctx):
+    vc = ctx.guild.voice_client
+    # play_next(ctx)
     if vc.is_playing():
         vc.stop()
-    vc.play(discord.FFmpegPCMAudio(audio_url, **FFMPEG_OPTIONS))
-    await ctx.send(f"Now playing {result}")
-
+        await ctx.send("Skipped to next song")
+    else:
+        await ctx.send("No songs in queue")
 
 bot.run(api_key)
